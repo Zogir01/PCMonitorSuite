@@ -1,0 +1,52 @@
+# Pliki użytkownika Visual Studio
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.VC.db
+
+# Katalogi robocze Visual Studio
+.vs/
+PCMonitor/bin/
+PCMonitor/obj/
+
+# Backupy i pliki tymczasowe
+*.log
+*.tmp
+*.bak
+
+# NuGet packages (lokalne)
+packages/
+# Jeśli korzystasz z `packages.config`, ale chcesz commitować plik:
+!PCMonitor/packages.config
+
+# Pliki buildów
+*.dll
+*.exe
+*.pdb
+*.cache
+*.resources
+
+# Folder debugowania
+**/Debug/
+**/Release/
+
+# Rider, VS Code, inne IDE
+.idea/
+.vscode/
+
+# Pliki konfiguracji systemowych
+Thumbs.db
+Desktop.ini
+
+# Test results
+TestResult*
+*.coverage
+*.coveragexml
+
+# Styl i formatowanie
+*.DotSettings.user
+_ReSharper*/
+
+# Inne niepotrzebne do kontroli wersji
+PCMonitor/Resources/*.log
