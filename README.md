@@ -90,21 +90,11 @@ PCMonitorSuite/
 
 ## 📃 License
 
-For personal and educational use only. Not intended for production environments.
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
+See the [LICENSE](LICENSE) file for details.
 
 ---
 
 ## ✍️ Authors
-
-
-
-
-# Opis do wysłania
-
-- Temat: System monitorowania danych diagnostycznych komputerów w sieci lokalnej.
-
-- Skład zespołu: Paweł Kurek, Tomasz Wojtasek
-
-- Wstępny opis:
-System będzie składał się z komputerów z systemem Windows, zbierających dane diagnostyczne (takie jak temperatura CPU, użycie RAM, obciążenie CPU) oraz wysyłających te dane do centralnego serwera przez REST API. Serwer zapisze dane w bazie i udostępni je przez przeglądarkowy interfejs użytkownika (HTML/JS) w formie wykresów i tabel. 
 
