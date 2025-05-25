@@ -8,6 +8,7 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Security.Policy;
 
 namespace PCMonitor
 {
@@ -121,6 +122,26 @@ namespace PCMonitor
                 {
                     var response = client.PostAsync(Url, content).Result;
                     Logger.Log("Status: " + response.StatusCode);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Błąd API: " + ex.Message);
+                }
+            }
+        }
+
+        public void testowa_wysylka(String url)
+        {
+            using (var client = new HttpClient())
+            {
+                var content = new StringContent("testxd");
+                try
+                {
+                    var response = client.PostAsync(url, content).Result;
+                    Logger.Log("Status: " + response.StatusCode);
+
+                    string responseBody = response.Content.ReadAsStringAsync().Result;
+                    Logger.Log("Wiadomość od serwera: " + responseBody);
                 }
                 catch (Exception ex)
                 {

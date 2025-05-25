@@ -81,6 +81,11 @@ namespace PCMonitor
                 Application.Exit();
             });
 
+            contextMenu.MenuItems.Add("Testowa wysylka", (s, e) =>
+            {
+                Monitor.Instance.testowa_wysylka("http://127.0.0.1:8080/Przyklad3/SecondServlet");
+            });
+
             trayIcon = new NotifyIcon();
             trayIcon.Text = "PCMonitor";
             trayIcon.Visible = true;
