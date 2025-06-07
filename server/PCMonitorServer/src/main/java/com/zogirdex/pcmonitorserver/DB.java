@@ -15,35 +15,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 /*
-                        WRÓC DO TEJ STRUKTURY:
+WAŻNA KONWERSACJA
 https://chatgpt.com/c/6832f256-2064-8003-8a9e-8257e7d9cb36
-
-
--- Lista unikalnych sensorów (wspólna dla wszystkich komputerów)
-CREATE TABLE Sensors (
-    SensorId INT PRIMARY KEY IDENTITY,
-    HardwareName NVARCHAR(100),
-    SubHardwareName NVARCHAR(100),
-    SensorName NVARCHAR(100),
-    SensorType NVARCHAR(50)
-);
-
--- Lista komputerów
-CREATE TABLE Computers (
-    ComputerId INT PRIMARY KEY IDENTITY,
-    MachineName NVARCHAR(100) UNIQUE
-);
-
--- Powiązanie komputer-sensor z wartościami w czasie
-CREATE TABLE SensorReadings (
-    ReadingId INT PRIMARY KEY IDENTITY,
-    ComputerId INT FOREIGN KEY REFERENCES Computers(ComputerId),
-    SensorId INT FOREIGN KEY REFERENCES Sensors(SensorId),
-    Value FLOAT,
-    Timestamp DATETIME
-);
 */
-
 
 /**
  *
@@ -79,43 +53,92 @@ public class DB {
         }
     }
     
-    public void addSensor(Sensor sensor){
+     public void addObject(Object object) {
+        session.beginTransaction();
+        session.save(object);
+        session.getTransaction().commit();
+    }
+     
+     public List<Computer> getAllComputers() {
+         List<Computer> computers = session.createQuery("from Computer", Computer.class).list();
+         return computers;
+     }
+    
+    public List<Sensor> getAllSensors() {
+        
+        List<Sensor> sensors = session.createQuery("from Sensor", Sensor.class).list();
+        return sensors;
+    }
+    
+    public List<SensorReading> getAllSensorReadings() {
+        
+        List<SensorReading> sensorReadings = session.createQuery("from SensorReading", SensorReading.class).list();
+        return sensorReadings;
+    }
+    
+    public Computer getComputer(long id) {
+        return session.get(Computer.class, id);
+    }
+    
+    public Sensor getSensor(long id) {
+        return session.get(Sensor.class, id);
+    }
+        
+    public SensorReading getSensorReading(long id) {
+        return session.get(SensorReading.class, id);
+    }
+    
+    public void removeComputer(Computer computer) {
+        session.beginTransaction();
+        session.remove(computer);
+        session.getTransaction().commit();
+    }
+    
+    public void removeSensor(Sensor sensor) {
+        session.beginTransaction();
+        session.remove(sensor);
+        session.getTransaction().commit();
+    }
+    
+    public void removeSensorReading(SensorReading sensorReading) {
+        session.beginTransaction();
+        session.remove(sensorReading);
+        session.getTransaction().commit();
+    }
+    
+    public void updateComputer(Computer computer) {
+        session.beginTransaction();
+        session.persist(computer);
+        session.getTransaction().commit();
+    }
+    
+    public void updateSensor(Sensor sensor) {
+        session.beginTransaction();
+        session.persist(sensor);
+        session.getTransaction().commit();
+    }
+    
+    public void updateSensorReading(SensorReading sensorReading) {
+        session.beginTransaction();
+        session.persist(sensorReading);
+        session.getTransaction().commit();
+    }
+    
+    public void addComputer(Computer computer) {
+        session.beginTransaction();
+        session.save(computer);
+        session.getTransaction().commit();
+    }
+    
+    public void addSensor(Sensor sensor) {
         session.beginTransaction();
         session.save(sensor);
         session.getTransaction().commit();
     }
     
-     public void addObject(Object object){
+    public void addSensorReading(SensorReading sensorReading) {
         session.beginTransaction();
-        session.save(object);
-        session.getTransaction().commit();
-    }
-    
-    public List<Sensor> getAllSensors(){
-        
-        List<Student> studenci = session.createQuery("from Student", Student.class).list();
-        return studenci;
-    }
-    
-    public Student getStudent(long id){
-        return session.get(Student.class, id);
-    }
-    
-    public void removeStudent(Student student){
-        session.beginTransaction();
-        session.remove(student);
-        session.getTransaction().commit();
-    }
-    
-    public void updeateStudent(Student student){
-        session.beginTransaction();
-        session.persist(student);
-        session.getTransaction().commit();
-    }
-    
-    public void addOcena(Ocena ocena){
-        session.beginTransaction();
-        session.save(ocena);
+        session.save(sensorReading);
         session.getTransaction().commit();
     }
     

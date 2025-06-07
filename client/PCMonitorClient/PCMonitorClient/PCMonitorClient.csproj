@@ -78,7 +78,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SensorInfo.cs" />
+    <Compile Include="SensorReading.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

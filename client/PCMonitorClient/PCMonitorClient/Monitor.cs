@@ -46,8 +46,13 @@ namespace PCMonitor
             {
                 try
                 {
-                    var data = ReadData();
-                    SendToApi(data, apiUrl);
+                    var readings = ReadData();
+                    var payload = new SensorReadingsPayload
+                    {
+                        ComputerId = Environment.MachineName, // unikalny identyfikator komputera
+                        Readings = readings
+                    };
+                    SendToApi(payload, apiUrl);
                 }
                 catch (Exception ex)
                 {
@@ -64,9 +69,9 @@ namespace PCMonitor
             timer = null;
         }
 
-        public List<SensorInfo> ReadData()
+        public List<SensorReading> ReadData()
         {
-            List<SensorInfo> sensorData = new List<SensorInfo>();
+            List<SensorReading> sensorData = new List<SensorReading>();
 
             foreach (IHardware hardware in computer.Hardware)
             {
@@ -84,7 +89,7 @@ namespace PCMonitor
 
                         foreach (ISensor sensor in subhardware.Sensors)
                         {
-                            sensorData.Add(new SensorInfo
+                            sensorData.Add(new SensorReading
                             {
                                 HardwareName = hardware.Name,
                                 SubHardwareName = subhardware.Name,
@@ -97,7 +102,7 @@ namespace PCMonitor
 
                     foreach (ISensor sensor in hardware.Sensors)
                     {
-                        sensorData.Add(new SensorInfo
+                        sensorData.Add(new SensorReading
                         {
                             HardwareName = hardware.Name,
                             SubHardwareName = null,
@@ -111,9 +116,11 @@ namespace PCMonitor
             return sensorData;
         }
 
-        public void SendToApi(List<SensorInfo> sensorData, String Url)
+        public void SendToApi(SensorReadingsPayload payload, String Url)
         {
-            var json = JsonConvert.SerializeObject(sensorData, Formatting.Indented);
+            var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+
+            File.WriteAllText("readings.json", json);
 
             using (var client = new HttpClient())
             {

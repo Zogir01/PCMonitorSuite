@@ -3,33 +3,25 @@ package com.zogirdex.pcmonitorserver;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.GeneratedValue;
 
 /**
  *
  * @author tom3k
  */
 @Entity
-@Table(name = "Sensor")
-public class Sensor {
+@Table (name = "Computer")
+public class Computer {
     @Id
     @GeneratedValue
     private Long id;
 
     @Column
-    private String hardwareName;
+    private String computerName;
 
-    private String subHardwareName;
-
-    @Column
-    private String sensorName;
-
-    @Column
-    private String sensorType;
-
-    @OneToMany(mappedBy = "sensor")
+    @OneToMany(mappedBy = "computer")
     private List<SensorReading> readings;
 }
