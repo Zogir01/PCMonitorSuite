@@ -15,14 +15,18 @@ import com.google.gson.Gson;
 /**
  *
  * @author tom3k
+ * 
+ * Na POST odczytuje dane diagnostyczne (w postaci JSON) od clienta
+ * Na GET umożliwia wyświetlenie aktualnych danych przesyłanych do serwera dla wszystkich komputerów
+ * 
  */
 @WebServlet("/api/data")
 public class DataReceiverServlet extends HttpServlet {
 
 	// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-	Map<String, ComputerDTO> latestSensorUploads = new HashMap<String, ComputerDTO>();
+	Map<String, MonitorDataPayloadDTO> latestSensorUploads = new HashMap<String, MonitorDataPayloadDTO>();
 
-	private void printTable(PrintWriter out, ComputerDTO upload) {
+	private void printTable(PrintWriter out, MonitorDataPayloadDTO upload) {
 		out.println("<h2> ComputerName = " + upload.ComputerName + "</h2>");
 		out.println("<table>");
 		out.println("<tr>");
@@ -32,7 +36,7 @@ public class DataReceiverServlet extends HttpServlet {
 		out.println("<th>SensorType</th>");
 		out.println("<th>Value</th>");
 		out.println("</tr>");
-		for (SensorReadingDTO sensor : upload.Readings) {
+		for (MonitorDataDTO sensor : upload.Readings) {
 			out.println("<tr>");
 			out.println("<td>" + sensor.HardwareName + "</td>");
 			out.println("<td>" + sensor.SubHardwareName + "</td>");
@@ -46,10 +50,10 @@ public class DataReceiverServlet extends HttpServlet {
 	}
 
 	// Mapowanie DTO -> Encje Hibernate i zapis do DB
-	private void saveComputerData(ComputerDTO dto, DB db) {
+	private void saveComputerData(MonitorDataPayloadDTO dto, DB db) {
 		Computer c = db.findOrCreateComputer(dto.ComputerName);
 
-		for (SensorReadingDTO readingDto : dto.Readings) {
+		for (MonitorDataDTO readingDto : dto.Readings) {
 			Sensor s = db.findOrCreateSensor(readingDto.HardwareName, readingDto.SubHardwareName, readingDto.SensorName, readingDto.SensorType);
 			//Sensor s = db.findOrCreateSensor("h", "sh", "s", "st");
 			SensorReading sr = new SensorReading(s, readingDto.Value);
@@ -61,9 +65,9 @@ public class DataReceiverServlet extends HttpServlet {
 		}
 	}
 
-	private void printComputerData(ComputerDTO dto) {
+	private void printComputerData(MonitorDataPayloadDTO dto) {
 		System.out.println("Otrzymano dane z komputera: " + dto.ComputerName);
-		for (SensorReadingDTO reading : dto.Readings) {
+		for (MonitorDataDTO reading : dto.Readings) {
 			System.out.printf("  - %s | %s | %s | %s = %.2f\n",
 				reading.HardwareName,
 				reading.SubHardwareName,
@@ -103,28 +107,15 @@ public class DataReceiverServlet extends HttpServlet {
 			out.println("<button onclick=\"location.reload()\">Odśwież</button>");
 			out.println("<br><br>");
 
-			if (latestSensorUploads.isEmpty()) { // Brak danych w cache - serwer jeszcze nie odczytał danych od clienta                
+			if (latestSensorUploads.isEmpty()) { 
+				// Brak danych w cache - serwer jeszcze nie odczytał danych od clienta                
 				out.println("Brak aktualnych danych - uruchom PCMonitorClient");
 				// Ew. można by odczytać najświeższe dane z bazy
 			} 
-			else { // odczytaj dane zapisane w cache
-				String computerNameReqParam = request.getParameter("ComputerName");
-
-				if (computerNameReqParam != null) {
-					// Wyswietli dane komputera z parametru requesta
-					ComputerDTO uploadfromParam = latestSensorUploads.get(computerNameReqParam);
-					if (uploadfromParam == null) {
-						// Niezgodny parametr
-						out.println("Brak danych dla komputera: ComputerName = " + computerNameReqParam);
-					} else {
-						// Wyswetli dane komputera podanego w parametrze
-						printTable(out, uploadfromParam);
-					}
-				} else {
-					// Wyswetli dane wszystkich komputerów zapisanych w cache
-					for (ComputerDTO latestUpload : latestSensorUploads.values()) {
-						printTable(out, latestUpload);
-					}
+			else { 
+				// Wyswetli dane wszystkich komputerów zapisanych w cache
+				for (MonitorDataPayloadDTO latestUpload : latestSensorUploads.values()) {
+					printTable(out, latestUpload);
 				}
 			}
 			out.println("</body>");
@@ -141,7 +132,7 @@ public class DataReceiverServlet extends HttpServlet {
 			Gson gson = new Gson();
 
 			// Parsowanie JSON do obiektu Java
-			ComputerDTO dto = gson.fromJson(reader, ComputerDTO.class);
+			MonitorDataPayloadDTO dto = gson.fromJson(reader, MonitorDataPayloadDTO.class);
 			latestSensorUploads.put(dto.ComputerName, dto);
 
 			// Zapis do bazy danych

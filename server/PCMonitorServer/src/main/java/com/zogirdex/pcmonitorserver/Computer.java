@@ -12,6 +12,9 @@ import javax.persistence.Table;
 /**
  *
  * @author tom3k
+ * 
+ * Model danych aplikacji (encja). Reprezentuje dane komputera w systemie.
+ * 
  */
 @Entity
 @Table(name = "Computer")

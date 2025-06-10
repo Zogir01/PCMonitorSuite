@@ -15,6 +15,9 @@ import org.hibernate.cfg.Configuration;
 /**
  *
  * @author tom3k
+ * 
+ * Klasa do zarządzania bazą danych.
+ * 
  */
 public class DB {
 
@@ -143,9 +146,6 @@ public class DB {
 		CriteriaQuery<Sensor> criteria = builder.createQuery(Sensor.class);
 		Root<Sensor> root = criteria.from(Sensor.class);
 
-		// Sprawdza czy istnieje rekord z takimi samymi parametrami (te parametry są unikalne dla sensorów)
-//		System.out.println("hardwareName = " + root.get("hardwareName") + " subHardwareName = " + root.get("subHardwareName") + " sensorName =  " + root.get("sensorName") + " sensorType = " + root.get("sensorType"));
-		
 		Predicate predicate = builder.and(
 			builder.equal(root.get("hardwareName"), hw),
 			builder.equal(root.get("subHardwareName"), subhw),

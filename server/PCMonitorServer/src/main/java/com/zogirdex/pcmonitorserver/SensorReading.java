@@ -12,6 +12,9 @@ import javax.persistence.JoinColumn;
 /**
  *
  * @author tom3k
+ * 
+ * Model danych aplikacji (encja). Reprezentuje dane pojedyńczego pomiaru danych diagnostycznych w systemie.
+ * 
  */
 @Entity
 @Table(name = "SensorReading")
