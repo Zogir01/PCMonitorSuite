@@ -47,19 +47,19 @@ namespace PCMonitor
                 try
                 {
                     var readings = ReadData();
-                    var payload = new SensorReadingsPayload
+                    var payload = new MonitorDataPayloadDTO
                     {
                         ComputerName = Environment.MachineName, // unikalny identyfikator komputera
                         Readings = readings
                     };
                     SendToApi(payload, apiUrl);
 
-                    var payload2 = new SensorReadingsPayload
-                    {
-                        ComputerName = "testowy-komputer",
-                        Readings = readings
-                    };
-                    SendToApi(payload2, apiUrl);
+                    //var payload2 = new MonitorDataPayloadDTO
+                    //{
+                    //    ComputerName = "testowy-komputer",
+                    //    Readings = readings
+                    //};
+                    //SendToApi(payload2, apiUrl);
                 }
                 catch (Exception ex)
                 {
@@ -76,9 +76,9 @@ namespace PCMonitor
             timer = null;
         }
 
-        public List<SensorReading> ReadData()
+        public List<MonitorDataDTO> ReadData()
         {
-            List<SensorReading> sensorData = new List<SensorReading>();
+            List<MonitorDataDTO> sensorData = new List<MonitorDataDTO>();
 
             foreach (IHardware hardware in computer.Hardware)
             {
@@ -96,7 +96,7 @@ namespace PCMonitor
 
                         foreach (ISensor sensor in subhardware.Sensors)
                         {
-                            sensorData.Add(new SensorReading
+                            sensorData.Add(new MonitorDataDTO
                             {
                                 HardwareName = hardware.Name,
                                 SubHardwareName = subhardware.Name,
@@ -109,7 +109,7 @@ namespace PCMonitor
 
                     foreach (ISensor sensor in hardware.Sensors)
                     {
-                        sensorData.Add(new SensorReading
+                        sensorData.Add(new MonitorDataDTO
                         {
                             HardwareName = hardware.Name,
                             SubHardwareName = null,
@@ -123,7 +123,7 @@ namespace PCMonitor
             return sensorData;
         }
 
-        public void SendToApi(SensorReadingsPayload payload, String Url)
+        public void SendToApi(MonitorDataPayloadDTO payload, String Url)
         {
             var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
 

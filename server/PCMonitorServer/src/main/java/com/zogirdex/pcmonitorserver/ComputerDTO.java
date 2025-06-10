@@ -1,17 +1,19 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.zogirdex.pcmonitorserver;
-
-import java.util.List;
 
 /**
  *
  * @author tom3k
- *
- * Cały ładunek json odbierany od clienta
- *
- * Nazwy parametrów tej klasy muszą być zgodne z danymi w json, można by też użyć adnotacji, np.: (w przypadku google.gson)
- * @SerializedName("ComputerName")
  */
 public class ComputerDTO {
-	public String ComputerName;
-	public List<SensorReadingDTO> Readings;
+	public Long id;
+	public String computerName;
+
+	public ComputerDTO(Long id, String computerName) {
+		this.id = id;
+		this.computerName = computerName;
+	}
 }

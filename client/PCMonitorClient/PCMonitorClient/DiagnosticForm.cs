@@ -42,7 +42,7 @@ namespace PCMonitor
         public void LoadSensorData()
         {
             listView.Items.Clear();
-            List<SensorReading> data = Monitor.Instance.ReadData();
+            List<MonitorDataDTO> data = Monitor.Instance.ReadData();
 
             foreach (var sensor in data)
             {

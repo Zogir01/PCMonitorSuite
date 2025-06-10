@@ -13,9 +13,11 @@ import javax.persistence.GeneratedValue;
 /**
  *
  * @author tom3k
+ * 
+ * Model danych aplikacji (encja). Reprezentuje dane sensora w systemie.
+ * 
  */
 @Entity
-//@Table(name = "Sensor")
 @Table(name = "Sensor", uniqueConstraints = @UniqueConstraint(columnNames = {
     "hardwareName", "subHardwareName", "sensorName", "sensorType"
 }))

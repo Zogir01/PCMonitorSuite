@@ -1,20 +1,22 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.zogirdex.pcmonitorserver;
+
+import java.time.LocalDateTime;
 
 /**
  *
  * @author tom3k
- *
- * DTO — Data Transfer Object
- *
- * Dane pojedyńczego sensora odbierane od clienta
- *
- *  * Nazwy parametrów tej klasy muszą być zgodne z danymi w json, można by też użyć adnotacji, np.: (w przypadku google.gson)
- * @SerializedName("HardwareName")
  */
 public class SensorReadingDTO {
-	public String HardwareName;
-	public String SubHardwareName;
-	public String SensorName;
-	public String SensorType;
-	public Float Value;
+	public Long id;
+	public Float value;
+	public LocalDateTime timestamp;
+
+	public SensorReadingDTO(Long id, Float value) {
+		this.id = id;
+		this.value = value;
+	}
 }
