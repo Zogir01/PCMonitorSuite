@@ -3,15 +3,18 @@ package com.zogirdex.pcmonitorserver;
 /**
  *
  * @author tom3k
- * 
+ *
  * DTO — Data Transfer Object
- * 
- * Klasa ta określa dane diagnostyczne przychodzące od clienta po rest api
+ *
+ * Dane pojedyńczego sensora odbierane od clienta
+ *
+ *  * Nazwy parametrów tej klasy muszą być zgodne z danymi w json, można by też użyć adnotacji, np.: (w przypadku google.gson)
+ * @SerializedName("HardwareName")
  */
 public class SensorReadingDTO {
-    public String hardwareName;
-    public String subHardwareName;
-    public String sensorName;
-    public String sensorType;
-    public Float value;
+	public String HardwareName;
+	public String SubHardwareName;
+	public String SensorName;
+	public String SensorType;
+	public Float Value;
 }

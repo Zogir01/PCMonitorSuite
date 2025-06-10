@@ -39,7 +39,7 @@ namespace PCMonitor
 
             contextMenu.MenuItems.Add("Start monitoring", (s, e) =>
             {
-                Monitor.Instance.StartMonitoring(10000, "http://127.0.0.1/api/data");
+                Monitor.Instance.StartMonitoring(10000, "http://127.0.0.1:8080/PCMonitorServer/api/data");
                 Logger.Log("Monitoring został aktywowany przez użytkownika.");
                 MessageBox.Show("Monitoring został aktywowany.", "Informacja");
             });

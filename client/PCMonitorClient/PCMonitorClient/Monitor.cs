@@ -49,10 +49,17 @@ namespace PCMonitor
                     var readings = ReadData();
                     var payload = new SensorReadingsPayload
                     {
-                        ComputerId = Environment.MachineName, // unikalny identyfikator komputera
+                        ComputerName = Environment.MachineName, // unikalny identyfikator komputera
                         Readings = readings
                     };
                     SendToApi(payload, apiUrl);
+
+                    var payload2 = new SensorReadingsPayload
+                    {
+                        ComputerName = "testowy-komputer",
+                        Readings = readings
+                    };
+                    SendToApi(payload2, apiUrl);
                 }
                 catch (Exception ex)
                 {
@@ -120,6 +127,7 @@ namespace PCMonitor
         {
             var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
 
+            // Testowo - zapis do pliku
             File.WriteAllText("readings.json", json);
 
             using (var client = new HttpClient())
@@ -133,6 +141,8 @@ namespace PCMonitor
                 catch (Exception ex)
                 {
                     Logger.Log("Błąd API: " + ex.Message);
+                    Logger.Log("Stack trace: " + ex.StackTrace);
+                    Logger.Log("ex.ToString(): " + ex.ToString());
                 }
             }
         }
@@ -152,7 +162,9 @@ namespace PCMonitor
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log("Błąd API: " + ex.Message);
+                    //Logger.Log("Błąd API: " + ex.Message);
+                    //Console.Out.Write("Stack trace: " + ex.StackTrace);
+                    //Console.Out.Write("ex.ToString(): " + ex.ToString());
                 }
             }
         }

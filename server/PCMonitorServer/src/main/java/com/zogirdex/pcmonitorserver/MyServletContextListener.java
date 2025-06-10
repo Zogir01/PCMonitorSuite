@@ -12,27 +12,26 @@ import java.util.logging.Logger;
  */
 @WebListener
 public class MyServletContextListener implements ServletContextListener {
+	DB db;
 
-    DB db;
+	@Override
+	public void contextDestroyed(ServletContextEvent sce) {
+		if (db != null) {
+			db.disconnect();
+		}
+	}
 
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        if (db != null) {
-            db.disconnect();
-        }
-    }
+	@Override
+	public void contextInitialized(ServletContextEvent sce) {
+		try {
+			Class.forName("org.h2.Driver");
 
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        
-        try {
-            Class.forName("org.h2.Driver");
-            
-            db = new DB();
-            db.connect();
-            sce.getServletContext().setAttribute("db", db);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MyServletContextListener.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+			db = new DB();
+			db.connect();
+			sce.getServletContext().setAttribute("db", db);
+		} 
+		catch (ClassNotFoundException ex) {
+			Logger.getLogger(MyServletContextListener.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
 }
