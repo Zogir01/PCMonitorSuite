@@ -7,27 +7,28 @@
 ## ✅ Requirements
 To build and run the PCMonitorSuite, make sure you have the following installed:
 
-### 🖥️ PCMonitor (desktop application)
+### 🖥️ PCMonitorClient (desktop application)
 - Windows 10/11 (x64)
 - .NET Framework 4.7.2 or higher
 - LibreHardwareMonitorLib (included as reference)
 - Newtonsoft.Json (installed via NuGet)
 - Visual Studio 2019 or newer
 
-### 🌐 Server API (backend)
+### 🌐 PCMonitorServer (backend)
 - Java 11+
 - Apache NetBeans (or any IDE with Jakarta EE / Jersey support)
 - Maven
--REST API deployed on local or remote server (e.g., Tomcat, GlassFish)
+- REST API deployed on local or remote server (e.g., Tomcat)
+- h2 database
 
 ---
 
 ## 📁 Project Structure
 PCMonitorSuite/
-├── client/ # Desktop application (Windows Forms, C#)
-│ └── PCMonitor/ # Visual Studio project
-├── server/ # REST API backend
-│ └── PCMonitorAPI/ # NetBeans / Java project
+├── client/ # 
+│ └── PCMonitorClient/ # Desktop application (Windows Forms, C#)
+├── server/ 
+│ └── PCMonitorServer/ # NetBeans / Java project
 └── README.md
 
 
@@ -35,7 +36,7 @@ PCMonitorSuite/
 
 ## 🧩 Components
 
-### 🖥️ Client Application – `PCMonitor`
+### 🖥️ Client Application – `PCMonitorClient`
 - Written in **C#** (.NET)
 - Uses **LibreHardwareMonitor** to read sensor data (CPU, GPU, RAM, etc.)
 - Runs in the background as a **tray icon**
@@ -47,7 +48,7 @@ PCMonitorSuite/
   - sending JSON data to REST API
 - Mode: **Windows Forms**, optionally set to run at startup using Task Scheduler
 
-### 🌐 Server – `PCMonitorAPI`
+### 🌐 Server – `PCMonitorServer`
 - REST API written in **Java (Jakarta EE / JAX-RS)**
 - Receives diagnostic data in JSON format
 - Can store data:

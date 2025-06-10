@@ -9,22 +9,11 @@ using System.Drawing;
 using LibreHardwareMonitor.Hardware;
 using Newtonsoft.Json;
 
-
-// OBCZAJ TEN TUTORIAL NA TEMAT TWORZENIA PROGRAMU-SERWISU W WINDOWS
-// https://www.youtube.com/watch?v=RcA-TLQfpp8&ab_channel=CodeMaze
-// Ew. zrób jako zwykłą apke konsolową i użyj task scheduler
-// ew. może jakiś tray-icon?
-//
-// TO-DO
-// - trzeba zrobić zapis konkretnych parametrów do json
-// - zrobić przesył jsona po http
-
 namespace PCMonitor
 {
     static class Program
     {
         private static NotifyIcon trayIcon;
-        //private static Timer timer;
         private static DiagnosticForm diagnosticForm;
 
         static void Main(string[] args)
@@ -33,7 +22,6 @@ namespace PCMonitor
             diagnosticForm = new DiagnosticForm();
   
             InitTrayIcon();
-            //Init_Timer();
             
             Logger.Log("Start PCMonitor.");
             Application.Run();
@@ -51,7 +39,7 @@ namespace PCMonitor
 
             contextMenu.MenuItems.Add("Start monitoring", (s, e) =>
             {
-                Monitor.Instance.StartMonitoring(10000, "http://127.0.0.1/api/data");
+                Monitor.Instance.StartMonitoring(10000, "http://127.0.0.1:8080/PCMonitorServer/api/data");
                 Logger.Log("Monitoring został aktywowany przez użytkownika.");
                 MessageBox.Show("Monitoring został aktywowany.", "Informacja");
             });
@@ -93,6 +81,11 @@ namespace PCMonitor
                 Application.Exit();
             });
 
+            contextMenu.MenuItems.Add("Testowa wysylka", (s, e) =>
+            {
+                Monitor.Instance.testowa_wysylka("http://127.0.0.1:8080/Przyklad3/SecondServlet");
+            });
+
             trayIcon = new NotifyIcon();
             trayIcon.Text = "PCMonitor";
             trayIcon.Visible = true;
@@ -111,25 +104,6 @@ namespace PCMonitor
                 MessageBox.Show("Błąd podczas ustawiania ikonu tray.", "Błąd");
             }
         }
-
-        //private static void Init_Timer()
-        //{
-        //    // Timer co 10 sekund
-        //    timer = new Timer();
-        //    timer.Interval = 10000; // 10 sekund
-        //    timer.Tick += Timer_Tick;
-        //    timer.Start();
-        //}
-
-
-        //private static void Timer_Tick(object sender, EventArgs e)
-        //{
-        //    // Odczytaj dane czujników
-        //    List<SensorInfo> sensData = Monitor.Instance.ReadData();
-
-        //    // Wyślij dane czujników na serwer
-        //    Monitor.Instance.SendToApi(sensData, "http://127.0.0.1/api/data");
-        //}
 
         private static void TrayIcon_DoubleClick(object sender, EventArgs e)
         {

@@ -8,6 +8,7 @@ using System.Text;
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Security.Policy;
 
 namespace PCMonitor
 {
@@ -45,8 +46,20 @@ namespace PCMonitor
             {
                 try
                 {
-                    var data = ReadData();
-                    SendToApi(data, apiUrl);
+                    var readings = ReadData();
+                    var payload = new SensorReadingsPayload
+                    {
+                        ComputerName = Environment.MachineName, // unikalny identyfikator komputera
+                        Readings = readings
+                    };
+                    SendToApi(payload, apiUrl);
+
+                    var payload2 = new SensorReadingsPayload
+                    {
+                        ComputerName = "testowy-komputer",
+                        Readings = readings
+                    };
+                    SendToApi(payload2, apiUrl);
                 }
                 catch (Exception ex)
                 {
@@ -63,9 +76,9 @@ namespace PCMonitor
             timer = null;
         }
 
-        public List<SensorInfo> ReadData()
+        public List<SensorReading> ReadData()
         {
-            List<SensorInfo> sensorData = new List<SensorInfo>();
+            List<SensorReading> sensorData = new List<SensorReading>();
 
             foreach (IHardware hardware in computer.Hardware)
             {
@@ -83,7 +96,7 @@ namespace PCMonitor
 
                         foreach (ISensor sensor in subhardware.Sensors)
                         {
-                            sensorData.Add(new SensorInfo
+                            sensorData.Add(new SensorReading
                             {
                                 HardwareName = hardware.Name,
                                 SubHardwareName = subhardware.Name,
@@ -96,7 +109,7 @@ namespace PCMonitor
 
                     foreach (ISensor sensor in hardware.Sensors)
                     {
-                        sensorData.Add(new SensorInfo
+                        sensorData.Add(new SensorReading
                         {
                             HardwareName = hardware.Name,
                             SubHardwareName = null,
@@ -110,9 +123,12 @@ namespace PCMonitor
             return sensorData;
         }
 
-        public void SendToApi(List<SensorInfo> sensorData, String Url)
+        public void SendToApi(SensorReadingsPayload payload, String Url)
         {
-            var json = JsonConvert.SerializeObject(sensorData, Formatting.Indented);
+            var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+
+            // Testowo - zapis do pliku
+            File.WriteAllText("readings.json", json);
 
             using (var client = new HttpClient())
             {
@@ -125,6 +141,30 @@ namespace PCMonitor
                 catch (Exception ex)
                 {
                     Logger.Log("Błąd API: " + ex.Message);
+                    Logger.Log("Stack trace: " + ex.StackTrace);
+                    Logger.Log("ex.ToString(): " + ex.ToString());
+                }
+            }
+        }
+
+        public void testowa_wysylka(String url)
+        {
+            using (var client = new HttpClient())
+            {
+                var content = new StringContent("testxd");
+                try
+                {
+                    var response = client.PostAsync(url, content).Result;
+                    Logger.Log("Status: " + response.StatusCode);
+
+                    string responseBody = response.Content.ReadAsStringAsync().Result;
+                    Logger.Log("Wiadomość od serwera: " + responseBody);
+                }
+                catch (Exception ex)
+                {
+                    //Logger.Log("Błąd API: " + ex.Message);
+                    //Console.Out.Write("Stack trace: " + ex.StackTrace);
+                    //Console.Out.Write("ex.ToString(): " + ex.ToString());
                 }
             }
         }

@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{410DB125-17FF-497A-917F-8172136C4804}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>PCMonitor</RootNamespace>
-    <AssemblyName>PCMonitor</AssemblyName>
+    <RootNamespace>PCMonitorClient</RootNamespace>
+    <AssemblyName>PCMonitorClient</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -78,7 +78,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SensorInfo.cs" />
+    <Compile Include="SensorReading.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
