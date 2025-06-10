@@ -1,6 +1,7 @@
 package com.zogirdex.pcmonitorserver;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Properties;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -141,33 +142,28 @@ public class DB {
 	}
 
 	public Sensor findOrCreateSensor(String hw, String subhw, String name, String type) {
-		//session.beginTransaction();
 		CriteriaBuilder builder = session.getCriteriaBuilder();
 		CriteriaQuery<Sensor> criteria = builder.createQuery(Sensor.class);
 		Root<Sensor> root = criteria.from(Sensor.class);
 
-		Predicate predicate = builder.and(
-			builder.equal(root.get("hardwareName"), hw),
-			builder.equal(root.get("subHardwareName"), subhw),
-			builder.equal(root.get("sensorName"), name),
-			builder.equal(root.get("sensorType"), type)
-		);
-
-		criteria.select(root).where(predicate);
+		List<Predicate> predicates = new ArrayList<Predicate>();
+		
+		predicates.add(builder.equal(root.get("hardwareName"), hw));
+		if(subhw != null && subhw != "") { // w momencie jak builder.equal porównuje null, to całe zapytanie się psuje - tworzy nowy sensor, czyli powiela dane w bazie
+			predicates.add(builder.equal(root.get("subHardwareName"), subhw));
+		}
+		predicates.add(builder.equal(root.get("sensorName"), name));
+		predicates.add(builder.equal(root.get("sensorType"), type));
+		
+		 criteria.select(root).where(predicates.toArray(new Predicate[]{}));
 
 		List<Sensor> results = session.createQuery(criteria).getResultList();
 
 		if (results.isEmpty()) {
 			Sensor newSensor = new Sensor(hw, subhw, name, type);
-			//this.updateSensor(newSensor);
 			this.addSensor(newSensor);
-			//session.save(newSensor); // zamiast addSensor
-			// lub: session.persist(newSensor);
-			//session.flush(); // <- bardzo ważne!
-			//session.getTransaction().commit();
 			return newSensor;
 		}
-		//session.getTransaction().commit();
 		return results.get(0);
 	}
 
@@ -183,7 +179,6 @@ public class DB {
 
 		if (results.isEmpty()) {
 			Computer newComputer = new Computer(name);
-			//this.updateComputer(newComputer);
 			this.addComputer(newComputer);
 			return newComputer;
 		} else {

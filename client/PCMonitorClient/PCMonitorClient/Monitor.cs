@@ -54,12 +54,12 @@ namespace PCMonitor
                     };
                     SendToApi(payload, apiUrl);
 
-                    var payload2 = new MonitorDataPayloadDTO
-                    {
-                        ComputerName = "testowy-komputer",
-                        Readings = readings
-                    };
-                    SendToApi(payload2, apiUrl);
+                    //var payload2 = new MonitorDataPayloadDTO
+                    //{
+                    //    ComputerName = "testowy-komputer",
+                    //    Readings = readings
+                    //};
+                    //SendToApi(payload2, apiUrl);
                 }
                 catch (Exception ex)
                 {

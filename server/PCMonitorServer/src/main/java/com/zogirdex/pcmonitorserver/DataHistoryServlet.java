@@ -18,6 +18,9 @@ import java.util.List;
 /**
  *
  * @author tom3k
+ * 
+ * Zwraca listę SensorReading jako JSON dla określonego computerId oraz sensorId
+ * 
  */
 @WebServlet("/api/data/history")
 public class DataHistoryServlet extends HttpServlet {
