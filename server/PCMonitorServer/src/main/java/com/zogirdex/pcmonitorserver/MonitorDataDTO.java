@@ -16,5 +16,6 @@ public class MonitorDataDTO {
 	public String SubHardwareName;
 	public String SensorName;
 	public String SensorType;
-	public Float Value;
+	public Float SensorValue;
+	public String TimestampUtc;
 }

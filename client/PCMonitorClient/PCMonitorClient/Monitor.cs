@@ -102,7 +102,8 @@ namespace PCMonitor
                                 SubHardwareName = subhardware.Name,
                                 SensorName = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
-                                Value = sensor.Value
+                                SensorValue = sensor.Value,
+                                TimestampUtc = DateTime.UtcNow.ToString("o") // data w formacie ISO 8601
                             });
                         }
                     }
@@ -115,7 +116,8 @@ namespace PCMonitor
                             SubHardwareName = null,
                             SensorName = sensor.Name,
                             SensorType = sensor.SensorType.ToString(),
-                            Value = sensor.Value
+                            SensorValue = sensor.Value,
+                            TimestampUtc = DateTime.UtcNow.ToString("o") // // data w formacie ISO 8601
                         });
                     }
                 }

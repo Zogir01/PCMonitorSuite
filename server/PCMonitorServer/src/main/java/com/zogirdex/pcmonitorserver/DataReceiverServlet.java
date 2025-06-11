@@ -42,7 +42,8 @@ public class DataReceiverServlet extends HttpServlet {
 			out.println("<td>" + sensor.SubHardwareName + "</td>");
 			out.println("<td>" + sensor.SensorName + "</td>");
 			out.println("<td>" + sensor.SensorType + "</td>");
-			out.println("<td>" + sensor.Value + "</td>");
+			out.println("<td>" + sensor.SensorValue + "</td>");
+			out.println("<td>" + sensor.TimestampUtc + "</td>");
 			out.println("</tr>");
 		}
 		out.println("</table>");
@@ -56,7 +57,7 @@ public class DataReceiverServlet extends HttpServlet {
 		for (MonitorDataDTO readingDto : dto.Readings) {
 			Sensor s = db.findOrCreateSensor(readingDto.HardwareName, readingDto.SubHardwareName, readingDto.SensorName, readingDto.SensorType);
 			//Sensor s = db.findOrCreateSensor("h", "sh", "s", "st");
-			SensorReading sr = new SensorReading(s, readingDto.Value);
+			SensorReading sr = new SensorReading(s, readingDto.SensorValue, readingDto.TimestampUtc);
 			sr.setSensor(s);
 			sr.setComputer(c);
 			c.addSensorReading(sr);
@@ -73,7 +74,8 @@ public class DataReceiverServlet extends HttpServlet {
 				reading.SubHardwareName,
 				reading.SensorName,
 				reading.SensorType,
-				reading.Value);
+				reading.SensorValue,
+				reading.TimestampUtc);
 		}
 	}
 

@@ -12,11 +12,12 @@ import java.time.LocalDateTime;
  */
 public class SensorReadingDTO {
 	public Long id;
-	public Float value;
-	public LocalDateTime timestamp;
+	public Float sensorValue;
+	public String timestampUtc;
 
-	public SensorReadingDTO(Long id, Float value) {
+	public SensorReadingDTO(Long id, Float sensorValue, String timestampUtc) {
 		this.id = id;
-		this.value = value;
+		this.sensorValue = sensorValue;
+		this.timestampUtc = timestampUtc;
 	}
 }

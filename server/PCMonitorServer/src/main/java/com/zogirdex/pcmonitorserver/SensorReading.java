@@ -33,17 +33,18 @@ public class SensorReading {
 	private Sensor sensor;
 
 	@Column
-	private Float value;
+	private Float sensorValue;
 
 	@Column
-	private LocalDateTime timestamp;
+	private String timestampUtc;
 
 	public SensorReading() {
 	}
 
-	public SensorReading(Sensor sensor, Float value) {
+	public SensorReading(Sensor sensor, Float sensorValue, String timestampUtc) {
 		this.sensor = sensor;
-		this.value = value;
+		this.sensorValue = sensorValue;
+		this.timestampUtc = timestampUtc;
 	}
 
 	public Long getId() {
@@ -58,12 +59,12 @@ public class SensorReading {
 		return sensor;
 	}
 
-	public Float getValue() {
-		return value;
+	public Float getSensorValue() {
+		return sensorValue;
 	}
 
-	public LocalDateTime getTimestamp() {
-		return timestamp;
+	public String getTimestampUtc() {
+		return timestampUtc;
 	}
 
 	public void setId(Long id) {
@@ -78,16 +79,18 @@ public class SensorReading {
 		this.sensor = sensor;
 	}
 
-	public void setValue(Float value) {
-		this.value = value;
+	public void setSensorValue(Float sensorValue) {
+		this.sensorValue = sensorValue;
 	}
 
-	public void setTimestamp(LocalDateTime timestamp) {
-		this.timestamp = timestamp;
+	public void setTimestampUtc(String timestampUtc) {
+		this.timestampUtc = timestampUtc;
 	}
 
 	@Override
 	public String toString() {
-		return "SensorReading{" + "id=" + id + ", computer=" + computer + ", sensor=" + sensor + ", value=" + value + ", timestamp=" + timestamp + '}';
+		return "SensorReading{" + "id=" + id + ", computer=" + computer + ", sensor=" + sensor + ", sensorValue=" + sensorValue + ", timestampUtc=" + timestampUtc + '}';
 	}
+
+	
 }

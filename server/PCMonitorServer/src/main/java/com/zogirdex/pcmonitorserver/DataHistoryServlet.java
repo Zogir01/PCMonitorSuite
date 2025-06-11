@@ -43,7 +43,7 @@ public class DataHistoryServlet extends HttpServlet {
 		List<SensorReading> sensorReadings = db.findSensorReadings(computerId, sensorId);
 		
 		for(SensorReading sr : sensorReadings) {
-			sensorReadingDTOs.add(new SensorReadingDTO(sr.getId(), sr.getValue()));
+			sensorReadingDTOs.add(new SensorReadingDTO(sr.getId(), sr.getSensorValue(), sr.getTimestampUtc()));
 		}
 		
 		Gson gson = new Gson();

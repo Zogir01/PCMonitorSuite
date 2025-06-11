@@ -23,7 +23,8 @@ namespace PCMonitor
             listView.Columns.Add("SubHardware", 150);
             listView.Columns.Add("Sensor", 200);
             listView.Columns.Add("Type", 100);
-            listView.Columns.Add("Value", 100);
+            listView.Columns.Add("SensorValue", 100);
+            listView.Columns.Add("TimestampUtc", 100);
 
             Button reloadButton = new Button
             {
@@ -50,7 +51,8 @@ namespace PCMonitor
                 item.SubItems.Add(sensor.SubHardwareName ?? "-");
                 item.SubItems.Add(sensor.SensorName);
                 item.SubItems.Add(sensor.SensorType);
-                item.SubItems.Add(sensor.Value?.ToString("F1") ?? "N/A");
+                item.SubItems.Add(sensor.SensorValue?.ToString("F1") ?? "N/A");
+                item.SubItems.Add(sensor.TimestampUtc);
                 listView.Items.Add(item);
             }
         }
