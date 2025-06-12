@@ -46,7 +46,15 @@ namespace PCMonitor
         public void LoadSensorData()
         {
             listView.Items.Clear();
-            List<MonitorDataDTO> data = Monitor.Instance.ReadData();
+
+            // Kopia danych z singletona Monitor
+            List<MonitorDataDTO> data = Monitor.Instance.getMonitorData();
+
+            if(data == null || data.Count == 0)
+            {
+                Logger.Log("Nie można wczytać danych do tabeli, gdyż dane diagnostyczne nie zostały odczytane");
+                return;
+            }
 
             foreach (var sensor in data)
             {

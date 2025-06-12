@@ -19,9 +19,33 @@ namespace PCMonitor
         public static Monitor Instance => instance.Value;
         // singleton
 
-        private Timer timer;
-
+        private Timer readingTimer;
+        private Timer sendingTimer;
         private Computer computer;
+        private int readingDataIntervalMs = 5000;
+        private readonly object _lock = new object();
+
+        // Lista danych diagnostycznych
+        private List<MonitorDataDTO> monitorDataDTOs = new List<MonitorDataDTO>();
+
+        // getter z zabezpieczeniem wielowątkowym
+        public List<MonitorDataDTO> getMonitorData()
+        {
+            lock (_lock)
+            {
+                return new List<MonitorDataDTO>(monitorDataDTOs); // zwraca kopie
+            };
+
+        }
+
+        // setter z zabezpieczeniem wielowątkowym
+        private void setMonitorData(List<MonitorDataDTO> monitorDataDTOs)
+        {
+            lock (_lock)
+            {
+                this.monitorDataDTOs = monitorDataDTOs;
+            }
+        }
 
         private Monitor ()
         {
@@ -35,50 +59,57 @@ namespace PCMonitor
                 IsNetworkEnabled = true,
                 IsStorageEnabled = true
             };
-
             computer.Open();
+
+            StartReading(readingDataIntervalMs);
         }
 
-        // Metoda do uruchomienia monitorowania w tle (poza wątkiem UI)
-        public void StartMonitoring(int intervalMs, string apiUrl)
+        private void StartReading(int intervalMs)
         {
-            timer = new Timer(_ =>
+            readingTimer = new Timer(_ =>
             {
                 try
                 {
-                    var readings = ReadData();
-                    var payload = new MonitorDataPayloadDTO
-                    {
-                        ComputerName = Environment.MachineName, // unikalny identyfikator komputera
-                        Readings = readings
-                    };
-                    SendToApi(payload, apiUrl);
-
-                    //var payload2 = new MonitorDataPayloadDTO
-                    //{
-                    //    ComputerName = "testowy-komputer",
-                    //    Readings = readings
-                    //};
-                    //SendToApi(payload2, apiUrl);
+                    setMonitorData(ReadData());
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log("Błąd w monitoringu: " + ex.Message);
+                    Logger.Log("Błąd podczas odzytywania danych diagnostycznych: " + ex.Message);
                 }
-            }, null, 0, intervalMs); // 0 = start natychmiast, potem co intervalMs
+            }, null, 0, intervalMs);
         }
 
-        // Metoda do zatrzymania monitorowania
-        public void StopMonitoring()
+        // Metoda do uruchomienia monitorowania w tle (poza wątkiem UI)
+        public void StartSending(int intervalMs, string apiUrl)
         {
-            timer?.Change(Timeout.Infinite, Timeout.Infinite);
-            timer?.Dispose();
-            timer = null;
+            sendingTimer = new Timer(_ =>
+            {
+                try
+                {
+                    var payload = new MonitorDataPayloadDTO
+                    {
+                        ComputerName = Environment.MachineName, // unikalny identyfikator komputera
+                        Readings = getMonitorData()
+                    };
+                    SendToApi(payload, apiUrl);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Błąd podczas wysyłania danych: " + ex.Message);
+                }
+            }, null, 0, intervalMs);
         }
 
-        public List<MonitorDataDTO> ReadData()
+        public void StopSending()
         {
-            List<MonitorDataDTO> sensorData = new List<MonitorDataDTO>();
+            sendingTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            sendingTimer?.Dispose();
+            sendingTimer = null;
+        }
+
+        private List<MonitorDataDTO> ReadData()
+        {
+            List<MonitorDataDTO> loadedMonitorData = new List<MonitorDataDTO>();
 
             foreach (IHardware hardware in computer.Hardware)
             {
@@ -96,7 +127,7 @@ namespace PCMonitor
 
                         foreach (ISensor sensor in subhardware.Sensors)
                         {
-                            sensorData.Add(new MonitorDataDTO
+                            loadedMonitorData.Add(new MonitorDataDTO
                             {
                                 HardwareName = hardware.Name,
                                 SubHardwareName = subhardware.Name,
@@ -110,7 +141,7 @@ namespace PCMonitor
 
                     foreach (ISensor sensor in hardware.Sensors)
                     {
-                        sensorData.Add(new MonitorDataDTO
+                        loadedMonitorData.Add(new MonitorDataDTO
                         {
                             HardwareName = hardware.Name,
                             SubHardwareName = null,
@@ -122,10 +153,10 @@ namespace PCMonitor
                     }
                 }
             }
-            return sensorData;
+            return loadedMonitorData;
         }
 
-        public void SendToApi(MonitorDataPayloadDTO payload, String Url)
+        private void SendToApi(MonitorDataPayloadDTO payload, String Url)
         {
             var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
 
@@ -145,28 +176,6 @@ namespace PCMonitor
                     Logger.Log("Błąd API: " + ex.Message);
                     Logger.Log("Stack trace: " + ex.StackTrace);
                     Logger.Log("ex.ToString(): " + ex.ToString());
-                }
-            }
-        }
-
-        public void testowa_wysylka(String url)
-        {
-            using (var client = new HttpClient())
-            {
-                var content = new StringContent("testxd");
-                try
-                {
-                    var response = client.PostAsync(url, content).Result;
-                    Logger.Log("Status: " + response.StatusCode);
-
-                    string responseBody = response.Content.ReadAsStringAsync().Result;
-                    Logger.Log("Wiadomość od serwera: " + responseBody);
-                }
-                catch (Exception ex)
-                {
-                    //Logger.Log("Błąd API: " + ex.Message);
-                    //Console.Out.Write("Stack trace: " + ex.StackTrace);
-                    //Console.Out.Write("ex.ToString(): " + ex.ToString());
                 }
             }
         }
