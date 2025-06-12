@@ -16,13 +16,11 @@ namespace PCMonitor
         private static NotifyIcon trayIcon;
         private static DiagnosticForm diagnosticForm;
         private static string apiUrl = "http://127.0.0.1:8080/PCMonitorServer/api/data";
-        private static int apiSendIntervalMs = 10000; // 10s
 
         static void Main(string[] args)
         {
             Application.ApplicationExit += Application_Exit;
-            diagnosticForm = new DiagnosticForm();
-  
+            
             InitTrayIcon();
             
             Logger.Log("Start PCMonitor.");
@@ -35,13 +33,14 @@ namespace PCMonitor
 
             contextMenu.MenuItems.Add("Pokaż dane diagnostyczne.", (s, e) =>
             {
+                diagnosticForm = new DiagnosticForm();
                 diagnosticForm.LoadSensorData();
                 diagnosticForm.Show();
             });
 
             contextMenu.MenuItems.Add("Start sending", (s, e) =>
             {
-                Monitor.Instance.StartSending(apiSendIntervalMs, apiUrl);
+                Monitor.Instance.StartSending(apiUrl);
                 Logger.Log("Wysyłanie danych zostało aktywowane przez użytkownika.");
                 MessageBox.Show("Wysyłanie danych zostało aktywowane.", "Informacja");
             });
