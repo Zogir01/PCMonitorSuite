@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PCMonitor
 {
-    internal class MonitorDataPayloadDTO
+    public class MonitorDataPayloadDTO
     {
         public string ComputerName { get; set; }
         public List<MonitorDataDTO> Readings { get; set; }

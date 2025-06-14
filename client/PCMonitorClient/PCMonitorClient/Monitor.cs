@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Security.Policy;
+using LibreHardwareMonitor.Hardware.Cpu;
 
 namespace PCMonitor
 {
@@ -19,9 +20,94 @@ namespace PCMonitor
         public static Monitor Instance => instance.Value;
         // singleton
 
-        private Timer timer;
-
+        private Timer readingTimer;
+        private Timer sendingTimer;
         private Computer computer;
+        private int readingDataIntervalMs = 5000;
+        private int sendingDataIntervalMs = 10000;
+        private readonly object _lock = new object();
+
+        // Lista danych diagnostycznych
+        private List<MonitorDataDTO> monitorDataDTOs = new List<MonitorDataDTO>();
+
+        // filtry, gdzie pojedyńczy filtr = SensorName
+        private HashSet<string> monitorDataFilters = new HashSet<string>();
+
+        public List<MonitorDataDTO> getMonitorData()
+        {
+            lock (_lock)
+            {
+                return new List<MonitorDataDTO>(monitorDataDTOs); // zwraca kopie
+            };
+
+        }
+
+        private void setMonitorData(List<MonitorDataDTO> monitorDataDTOs)
+        {
+            lock (_lock)
+            {
+                this.monitorDataDTOs = monitorDataDTOs;
+            }
+        }
+
+        public HashSet<string> getFilters()
+        {
+            lock (_lock)
+            {
+                return new HashSet<string>(monitorDataFilters); // zwraca kopie
+            };
+
+        }
+
+        public void setFilters(HashSet<string> filters)
+        {
+            lock (_lock)
+            {
+                this.monitorDataFilters = filters;
+            }
+        }
+
+        public int getReadingDataIntervalMs()
+        {
+            lock (_lock)
+            {
+                int interval = readingDataIntervalMs;
+                return interval;
+            }
+        }
+
+        public void setReadingDataIntervalMs(int interval)
+        {
+            lock (_lock)
+            {
+                this.readingDataIntervalMs = interval;
+            }
+        }
+
+        public int getSendingDataIntervalMs()
+        {
+            lock (_lock)
+            {
+                int interval = sendingDataIntervalMs;
+                return interval;
+            }
+        }
+
+        public void setSendingDataIntervalMs(int interval)
+        {
+            lock (_lock)
+            {
+                this.sendingDataIntervalMs = interval;
+            }
+        }
+
+        public void clearFilters()
+        {
+            lock (_lock)
+            {
+                this.monitorDataFilters.Clear();
+            }
+        }
 
         private Monitor ()
         {
@@ -35,51 +121,72 @@ namespace PCMonitor
                 IsNetworkEnabled = true,
                 IsStorageEnabled = true
             };
-
             computer.Open();
+
+            StartReading();
         }
 
-        // Metoda do uruchomienia monitorowania w tle (poza wątkiem UI)
-        public void StartMonitoring(int intervalMs, string apiUrl)
+        private void StartReading()
         {
-            timer = new Timer(_ =>
+            readingTimer = new Timer(_ =>
             {
                 try
                 {
-                    var readings = ReadData();
-                    var payload = new MonitorDataPayloadDTO
-                    {
-                        ComputerName = Environment.MachineName, // unikalny identyfikator komputera
-                        Readings = readings
-                    };
-                    SendToApi(payload, apiUrl);
-
-                    //var payload2 = new MonitorDataPayloadDTO
-                    //{
-                    //    ComputerName = "testowy-komputer",
-                    //    Readings = readings
-                    //};
-                    //SendToApi(payload2, apiUrl);
+                    setMonitorData(ReadData());
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log("Błąd w monitoringu: " + ex.Message);
+                    Logger.Log("Błąd podczas odzytywania danych diagnostycznych: " + ex.Message);
                 }
-            }, null, 0, intervalMs); // 0 = start natychmiast, potem co intervalMs
+            }, null, 0, getReadingDataIntervalMs());
         }
 
-        // Metoda do zatrzymania monitorowania
-        public void StopMonitoring()
+        // Metoda do uruchomienia monitorowania w tle (poza wątkiem UI)
+        public void StartSending(string apiUrl)
         {
-            timer?.Change(Timeout.Infinite, Timeout.Infinite);
-            timer?.Dispose();
-            timer = null;
+            sendingTimer = new Timer(_ =>
+            {
+                try
+                {
+                    List<MonitorDataDTO> monitorData = getMonitorData();
+                    HashSet<string> filters = getFilters();
+                    List<MonitorDataDTO> monitorDataFiltered = new List<MonitorDataDTO>();
+
+                    // Zastosuj filtry
+                    foreach(MonitorDataDTO md in monitorData)
+                    {
+                        if (filters.Contains(md.SensorName))
+                        {
+                            monitorDataFiltered.Add(md);
+                        }
+                    }
+
+                    MonitorDataPayloadDTO payload = new MonitorDataPayloadDTO
+                    {
+                        ComputerName = Environment.MachineName, // unikalny identyfikator komputera
+                        Readings = monitorDataFiltered
+                    };
+   
+                    SendToApi(payload, apiUrl);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Błąd podczas wysyłania danych: " + ex.Message);
+                }
+            }, null, 0, getSendingDataIntervalMs());
         }
 
-        public List<MonitorDataDTO> ReadData()
+        public void StopSending()
         {
-            List<MonitorDataDTO> sensorData = new List<MonitorDataDTO>();
+            sendingTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            sendingTimer?.Dispose();
+            sendingTimer = null;
+        }
 
+        private List<MonitorDataDTO> ReadData()
+        {
+            List<MonitorDataDTO> loadedMonitorData = new List<MonitorDataDTO>();
+            
             foreach (IHardware hardware in computer.Hardware)
             {
                 hardware.Update();
@@ -96,36 +203,40 @@ namespace PCMonitor
 
                         foreach (ISensor sensor in subhardware.Sensors)
                         {
-                            sensorData.Add(new MonitorDataDTO
+                            loadedMonitorData.Add(new MonitorDataDTO
                             {
                                 HardwareName = hardware.Name,
                                 SubHardwareName = subhardware.Name,
                                 SensorName = sensor.Name,
                                 SensorType = sensor.SensorType.ToString(),
-                                Value = sensor.Value
+                                SensorValue = sensor.Value,
+                                TimestampUtc = DateTime.UtcNow.ToString("o") // data w formacie ISO 8601
                             });
                         }
                     }
 
                     foreach (ISensor sensor in hardware.Sensors)
                     {
-                        sensorData.Add(new MonitorDataDTO
+                        loadedMonitorData.Add(new MonitorDataDTO
                         {
                             HardwareName = hardware.Name,
                             SubHardwareName = null,
                             SensorName = sensor.Name,
                             SensorType = sensor.SensorType.ToString(),
-                            Value = sensor.Value
+                            SensorValue = sensor.Value,
+                            TimestampUtc = DateTime.UtcNow.ToString("o") // // data w formacie ISO 8601
                         });
                     }
                 }
             }
-            return sensorData;
+            return loadedMonitorData;
         }
 
-        public void SendToApi(MonitorDataPayloadDTO payload, String Url)
+        private void SendToApi(MonitorDataPayloadDTO payload, String Url)
         {
             var json = JsonConvert.SerializeObject(payload, Formatting.Indented);
+
+            Console.WriteLine(json);
 
             // Testowo - zapis do pliku
             File.WriteAllText("readings.json", json);
@@ -143,28 +254,6 @@ namespace PCMonitor
                     Logger.Log("Błąd API: " + ex.Message);
                     Logger.Log("Stack trace: " + ex.StackTrace);
                     Logger.Log("ex.ToString(): " + ex.ToString());
-                }
-            }
-        }
-
-        public void testowa_wysylka(String url)
-        {
-            using (var client = new HttpClient())
-            {
-                var content = new StringContent("testxd");
-                try
-                {
-                    var response = client.PostAsync(url, content).Result;
-                    Logger.Log("Status: " + response.StatusCode);
-
-                    string responseBody = response.Content.ReadAsStringAsync().Result;
-                    Logger.Log("Wiadomość od serwera: " + responseBody);
-                }
-                catch (Exception ex)
-                {
-                    //Logger.Log("Błąd API: " + ex.Message);
-                    //Console.Out.Write("Stack trace: " + ex.StackTrace);
-                    //Console.Out.Write("ex.ToString(): " + ex.ToString());
                 }
             }
         }

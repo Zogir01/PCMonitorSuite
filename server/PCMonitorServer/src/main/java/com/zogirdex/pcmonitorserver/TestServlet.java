@@ -110,8 +110,8 @@ public class TestServlet extends HttpServlet {
 			
 			// Test dodawania nowych danych
 			Sensor s1 = db.findOrCreateSensor("CPU", "CPU-1", "3VOUT", "Voltage");
-			SensorReading sr1 = new SensorReading(s1, 3.11f);
-			SensorReading sr2 = new SensorReading(s1, 3.22f);
+			SensorReading sr1 = new SensorReading(s1, 3.11f, "2025-06-11T12:23:45.123Z");
+			SensorReading sr2 = new SensorReading(s1, 3.22f, "2025-06-11T12:23:45.123Z");
 			sr1.setSensor(s1);
 			sr2.setSensor(s1);
 			sr1.setComputer(comp2);
@@ -124,8 +124,8 @@ public class TestServlet extends HttpServlet {
 			db.addSensorReading(sr2);
 			
 			Sensor s2 = db.findOrCreateSensor("CPU", "CPU-1", "3VOUT", "Voltage");
-			SensorReading sr3 = new SensorReading(s2, 3.33f);
-			SensorReading sr4 = new SensorReading(s2, 3.41f);
+			SensorReading sr3 = new SensorReading(s2, 3.33f, "2025-06-11T12:23:45.123Z");
+			SensorReading sr4 = new SensorReading(s2, 3.41f, "2025-06-11T12:23:45.123Z");
 			sr3.setSensor(s2);
 			sr4.setSensor(s2);
 			sr3.setComputer(comp2);

@@ -33,8 +33,8 @@ public class DB {
 		prop.setProperty("connection.driver_class", "org.h2.Driver");
 		prop.setProperty("hibernate.enable_lazy_load_no_trans", "true");
 		prop.setProperty("hbm2ddl.auto", "update");
-		//prop.setProperty("javax.persistence.schema-generation.database.action", "update");
-		prop.setProperty("javax.persistence.schema-generation.database.action", "drop-and-create"); // drop-and-create - do testów
+		prop.setProperty("javax.persistence.schema-generation.database.action", "update");
+		//prop.setProperty("javax.persistence.schema-generation.database.action", "drop-and-create"); // drop-and-create - do testów
 		prop.setProperty("hibernate.show_sql", "true");
 
 		Configuration configuration = new Configuration().addProperties(prop);
@@ -46,9 +46,9 @@ public class DB {
 
 		// Do testów bazy danych 
 		try {
-			Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8090").start();
+			Server.createWebServer("-web", "-webAllowOthers", "-webPort", "9000").start();
 		} catch (Exception ex) {
-
+			ex.printStackTrace(); // <- dodaj to
 		}
 	}
 

@@ -42,7 +42,8 @@ public class DataReceiverServlet extends HttpServlet {
 			out.println("<td>" + sensor.SubHardwareName + "</td>");
 			out.println("<td>" + sensor.SensorName + "</td>");
 			out.println("<td>" + sensor.SensorType + "</td>");
-			out.println("<td>" + sensor.Value + "</td>");
+			out.println("<td>" + sensor.SensorValue + "</td>");
+			out.println("<td>" + sensor.TimestampUtc + "</td>");
 			out.println("</tr>");
 		}
 		out.println("</table>");
@@ -51,12 +52,14 @@ public class DataReceiverServlet extends HttpServlet {
 
 	// Mapowanie DTO -> Encje Hibernate i zapis do DB
 	private void saveComputerData(MonitorDataPayloadDTO dto, DB db) {
+		// Jeśli komputer o określonym ComputerName istnieje - zostanie zwrócony,
+		// w innym przypadku zostanie stworzony nowy obiekt.
 		Computer c = db.findOrCreateComputer(dto.ComputerName);
 
 		for (MonitorDataDTO readingDto : dto.Readings) {
-			Sensor s = db.findOrCreateSensor(readingDto.HardwareName, readingDto.SubHardwareName, readingDto.SensorName, readingDto.SensorType);
-			//Sensor s = db.findOrCreateSensor("h", "sh", "s", "st");
-			SensorReading sr = new SensorReading(s, readingDto.Value);
+			Sensor s = db.findOrCreateSensor(readingDto.HardwareName, readingDto.SubHardwareName, 
+					readingDto.SensorName, readingDto.SensorType);
+			SensorReading sr = new SensorReading(s, readingDto.SensorValue, readingDto.TimestampUtc);
 			sr.setSensor(s);
 			sr.setComputer(c);
 			c.addSensorReading(sr);
@@ -73,7 +76,8 @@ public class DataReceiverServlet extends HttpServlet {
 				reading.SubHardwareName,
 				reading.SensorName,
 				reading.SensorType,
-				reading.Value);
+				reading.SensorValue,
+				reading.TimestampUtc);
 		}
 	}
 
@@ -139,18 +143,12 @@ public class DataReceiverServlet extends HttpServlet {
 			DB db = (DB) getServletContext().getAttribute("db");
 			saveComputerData(dto, db);
 
-			// Wyświetlenie w celach testowych
-			//printComputerData(dto);
-
 			// Odpowiedź OK
 			response.setStatus(HttpServletResponse.SC_OK);
 			out.write("Zapisano dane.");
 
 		} catch (Exception ex) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//                try (PrintWriter out = response.getWriter()) {
-//                    out.print("{\"status\":\"error\",\"message\":\"" + ex.getMessage() + "\"}");
-//                }
 			ex.printStackTrace();
 		}
 	}

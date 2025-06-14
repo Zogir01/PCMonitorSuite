@@ -10,9 +10,10 @@ namespace PCMonitor
     public class MonitorDataDTO
     {
         public string HardwareName { get; set; }
-        public string SubHardwareName { get; set; } // null jeśli brak
+        public string SubHardwareName { get; set; }
         public string SensorName { get; set; }
         public string SensorType { get; set; }
-        public float? Value { get; set; }
+        public float? SensorValue { get; set; }
+        public string TimestampUtc { get; set; }
     }
 }

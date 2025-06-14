@@ -15,12 +15,12 @@ namespace PCMonitor
     {
         private static NotifyIcon trayIcon;
         private static DiagnosticForm diagnosticForm;
+        private static string apiUrl = "http://127.0.0.1:8080/PCMonitorServer/api/data";
 
         static void Main(string[] args)
         {
             Application.ApplicationExit += Application_Exit;
-            diagnosticForm = new DiagnosticForm();
-  
+            
             InitTrayIcon();
             
             Logger.Log("Start PCMonitor.");
@@ -33,22 +33,23 @@ namespace PCMonitor
 
             contextMenu.MenuItems.Add("Pokaż dane diagnostyczne.", (s, e) =>
             {
+                diagnosticForm = new DiagnosticForm();
                 diagnosticForm.LoadSensorData();
                 diagnosticForm.Show();
             });
 
-            contextMenu.MenuItems.Add("Start monitoring", (s, e) =>
+            contextMenu.MenuItems.Add("Start sending", (s, e) =>
             {
-                Monitor.Instance.StartMonitoring(10000, "http://127.0.0.1:8080/PCMonitorServer/api/data");
-                Logger.Log("Monitoring został aktywowany przez użytkownika.");
-                MessageBox.Show("Monitoring został aktywowany.", "Informacja");
+                Monitor.Instance.StartSending(apiUrl);
+                Logger.Log("Wysyłanie danych zostało aktywowane przez użytkownika.");
+                MessageBox.Show("Wysyłanie danych zostało aktywowane.", "Informacja");
             });
 
-            contextMenu.MenuItems.Add("Stop monitoring", (s, e) =>
+            contextMenu.MenuItems.Add("Stop sending", (s, e) =>
             {
-                Monitor.Instance.StopMonitoring();
-                Logger.Log("Monitoring został zatrzymany przez użytkownika.");
-                MessageBox.Show("Monitoring został zatrzymany.", "Informacja");
+                Monitor.Instance.StopSending();
+                Logger.Log("Wysyłanie danych zostało zatrzymane przez użytkownika.");
+                MessageBox.Show("Wysyłanie danych zostało zatrzymane.", "Informacja");
             });
 
             contextMenu.MenuItems.Add("Pokaż logi", (s, e) =>
@@ -79,11 +80,6 @@ namespace PCMonitor
             contextMenu.MenuItems.Add("Zamknij", (s, e) =>
             {
                 Application.Exit();
-            });
-
-            contextMenu.MenuItems.Add("Testowa wysylka", (s, e) =>
-            {
-                Monitor.Instance.testowa_wysylka("http://127.0.0.1:8080/Przyklad3/SecondServlet");
             });
 
             trayIcon = new NotifyIcon();
