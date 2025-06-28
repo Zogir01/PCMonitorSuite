@@ -22,6 +22,4 @@ public class SensorDTO {
 		this.sensorName = sensorName;
 		this.sensorType = sensorType;
 	}
-	
-	
 }

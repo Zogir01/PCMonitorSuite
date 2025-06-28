@@ -1,296 +1,325 @@
 <!DOCTYPE html>
 <html lang="pl">
-<head>
-  <meta charset="UTF-8" />
-  <title>Historia pomiarów</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --main-bg: #eef2f7;
-      --card-bg: #ffffff;
-      --primary: #2563eb;
-      --primary-light: #3b82f6;
-      --text-dark: #1f2937;
-      --text-light: #6b7280;
-      --border: #d1d5db;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #1E2F2F;
-      color: black;
-      margin: 0;
-      padding: 2rem;
-      max-width: 1100px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 2.2rem;
-      margin-bottom: 2.5rem;
-      color: white;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    select, button {
-      padding: 0.75rem;
-      font-size: 1rem;
-      width: 100%;
-      border-radius: 0.6rem;
-      border: 1px solid var(--border);
-      transition: 0.2s ease;
-      box-shadow: var(--shadow);
-      background-color: white;
-    }
-
-    select:hover, button:hover {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-    }
-
-    button {
-      background: var(--primary);
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: var(--primary-light);
-    }
-
-    .section {
-      margin-bottom: 2.5rem;
-    }
-
-    .box {
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      background: white;
-      box-shadow: var(--shadow);
-      margin-bottom: 1.5rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-    }
-
-    th, td {
-      text-align: left;
-      border-top: 1px solid var(--border);
-      padding: 0.75rem;
-    }
-
-    tr:hover {
-      background: #f3f4f6;
-    }
-
-    canvas {
-      max-width: 100%;
-    }
-
-    small {
-      color: var(--text-light);
-    }
-
-    h2 {
-      margin-top: 0;
-      color: var(--text-dark);
-      margin-bottom: 1rem;
-      font-size: 1.3rem;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>Historia pomiarów (API)</h1>
-
-  <div class="grid">
-    <div>
-      <label>Wybierz komputer</label>
-      <select id="computerSelect"></select>
-    </div>
-    <div>
-      <label>Wybierz sensor</label>
-      <select id="sensorSelect"></select>
-    </div>
-    <div>
-      <button onclick="loadHistory()">Pokaż historię</button>
-    </div>
-  </div>
-
-  <div class="section box">
-    <p><strong>Wybrany komputer:</strong> <span id="selectedComputer">---</span></p>
-    <p><strong>Wybrany sensor:</strong> <span id="selectedSensor">---</span></p>
-    <p><strong>Hardware:</strong> <span id="hardwareName">---</span></p>
-    <p><strong>Sub-hardware:</strong> <span id="subHardwareName">---</span></p>
-    <p><strong>Typ sensora:</strong> <span id="sensorType">---</span></p>
-  </div>
-
-  <div class="section">
-    <button onclick="loadHistory()">🔄 Odśwież</button>
-  </div>
-
-  <div class="grid">
-    <div class="box">
-      <h2>📊 Wykres kołowy</h2>
-      <canvas id="pieChart"></canvas>
-    </div>
-    <div class="box">
-      <h2>📈 Wykres słupkowy</h2>
-      <canvas id="barChart"></canvas>
-    </div>
-  </div>
-
-  <div class="box section">
-    <h2>📋 Historia pomiaru: tabela</h2>
-    <table>
-      <thead>
-        <tr><th>Czas</th><th>Wartość</th></tr>
-      </thead>
-      <tbody id="historyTable"></tbody>
-    </table>
-  </div>
-
-  <script>
-    const computerSelect = document.getElementById('computerSelect');
-    const sensorSelect = document.getElementById('sensorSelect');
-    const historyTable = document.getElementById('historyTable');
-    const selectedComputerSpan = document.getElementById('selectedComputer');
-    const selectedSensorSpan = document.getElementById('selectedSensor');
-
-    let barChart, pieChart;
-
-    async function loadOptions() {
-      const computers = await fetch('/PCMonitorServer/api/data/computers').then(r => r.json());
-      const sensors = await fetch('/PCMonitorServer/api/data/sensors').then(r => r.json());
-
-      computerSelect.innerHTML = computers.map(c => `<option value="${c.id}">${c.computerName}</option>`).join('');
-      sensorSelect.innerHTML = sensors.map(s => `<option value="${s.id}">${s.sensorName}</option>`).join('');
-    }
-
-    function formatDate(isoString) {
-      const date = new Date(isoString);
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      const h = String(date.getHours()).padStart(2, '0');
-      const min = String(date.getMinutes()).padStart(2, '0');
-      const s = String(date.getSeconds()).padStart(2, '0');
-      return `${y}-${m}-${d} ${h}:${min}:${s}`;
-    }
-
-    async function loadHistory() {
-      const compId = computerSelect.value;
-      const sensorId = sensorSelect.value;
-      selectedComputerSpan.textContent = compId;
-      selectedSensorSpan.textContent = sensorId;
-
-      const sensors = await fetch('/PCMonitorServer/api/data/sensors').then(r => r.json());
-      const selectedSensor = sensors.find(s => s.id == sensorId);
-
-      document.getElementById('hardwareName').textContent = selectedSensor?.hardwareName || '---';
-      document.getElementById('subHardwareName').textContent = selectedSensor?.subHardwareName || '---';
-      document.getElementById('sensorType').textContent = selectedSensor?.sensorType || '---';
-
-      const data = await fetch(`/PCMonitorServer/api/data/history?computerId=${compId}&sensorId=${sensorId}`).then(r => r.json());
-
-      historyTable.innerHTML = data.map(d => `<tr><td>${formatDate(d.timestampUtc)}</td><td>${d.sensorValue}</td></tr>`).join('');
-
-      drawCharts(data);
-    }
-
-    function drawCharts(data) {
-      const ctxBar = document.getElementById('barChart').getContext('2d');
-      const ctxPie = document.getElementById('pieChart').getContext('2d');
-
-      const labels = data.map(d => formatDate(d.timestampUtc));
-      const values = data.map(d => d.sensorValue);
-
-      if (barChart) barChart.destroy();
-      if (pieChart) pieChart.destroy();
-
-      barChart = new Chart(ctxBar, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Wartość',
-            data: values,
-            backgroundColor: '#2563eb'
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: { ticks: { autoSkip: true, maxTicksLimit: 10 } }
-          }
-        }
-      });
-
-      const valueCounts = {};
-      values.forEach(val => {
-        const key = String(val);
-        valueCounts[key] = (valueCounts[key] || 0) + 1;
-      });
-
-      const pieLabels = Object.keys(valueCounts);
-      const pieData = Object.values(valueCounts);
-      const total = pieData.reduce((sum, val) => sum + val, 0);
-
-      pieChart = new Chart(ctxPie, {
-        type: 'pie',
-        data: {
-          labels: pieLabels,
-          datasets: [{
-            data: pieData,
-            backgroundColor: pieLabels.map((_, i) => {
-              const colors = [
-                '#2563eb', '#10b981', '#f59e0b', '#ef4444',
-                '#6366f1', '#ec4899', '#3b82f6', '#14b8a6',
-                '#8b5cf6', '#f97316', '#eab308', '#22c55e'
-              ];
-              return colors[i % colors.length];
-            })
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const count = context.parsed;
-                  const percentage = ((count / total) * 100).toFixed(1);
-                  return `${context.label}: ${count} (${percentage}%)`;
-                }
-              }
+    <head>
+        <meta charset="UTF-8" />
+        <title>Historia pomiarów</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            :root {
+                --main-bg: #eef2f7;
+                --card-bg: #ffffff;
+                --primary: #2563eb;
+                --primary-light: #3b82f6;
+                --text-dark: #1f2937;
+                --text-light: #6b7280;
+                --border: #d1d5db;
+                --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             }
-          }
-        }
-      });
-    }
 
-    loadOptions();
-  </script>
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background: #f0f4f8;
+                color: black;
+                margin: 0;
+                padding: 2rem;
+                max-width: 1100px;
+                margin-left: auto;
+                margin-right: auto;
+            }
 
-</body>
+            h1 {
+                text-align: center;
+                font-size: 2.2rem;
+                margin-bottom: 2.5rem;
+                color: black;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+
+            }
+
+            select, button {
+                padding: 0.75rem;
+                font-size: 1rem;
+                width: 100%;
+                border-radius: 0.6rem;
+                border: 1px solid var(--border);
+                transition: 0.2s ease;
+                box-shadow: var(--shadow);
+                background-color: white;
+            }
+
+            select:hover, button:hover {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            }
+
+            button {
+                background: var(--primary);
+                color: white;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background: var(--primary-light);
+            }
+
+            .section {
+                margin-bottom: 2.5rem;
+            }
+
+            .box {
+                border: 1px solid var(--border);
+                border-radius: 1rem;
+                padding: 1.5rem;
+                background: white;
+                box-shadow: var(--shadow);
+                margin-bottom: 1.5rem;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.95rem;
+            }
+
+            th, td {
+                text-align: left;
+                border-top: 1px solid var(--border);
+                padding: 0.75rem;
+            }
+
+            tr:hover {
+                background: #f3f4f6;
+            }
+
+            canvas {
+                max-width: 100%;
+            }
+
+            small {
+                color: var(--text-light);
+            }
+
+            h2 {
+                margin-top: 0;
+                color: var(--text-dark);
+                margin-bottom: 1rem;
+                font-size: 1.3rem;
+            }
+        </style>
+    </head>
+    <body>
+
+        <h1>Historia pomiarów</h1>
+
+        <div class="grid">
+            <div>
+                <label>Wybierz komputer</label>
+                <select id="computerSelect"></select>
+            </div>
+            <div>
+                <label>Wybierz sensor</label>
+                <select id="sensorSelect"></select>
+            </div>
+            <div>
+                <button onclick="loadHistory()">Pokaż historię</button>
+            </div>
+        </div>
+
+        <div class="section box">
+            <p><strong>Wybrany komputer:</strong> <span id="selectedComputer">---</span></p>
+            <p><strong>Wybrany sensor:</strong> <span id="selectedSensor">---</span></p>
+            <p><strong>Hardware:</strong> <span id="hardwareName">---</span></p>
+            <p><strong>Sub-hardware:</strong> <span id="subHardwareName">---</span></p>
+            <p><strong>Typ sensora:</strong> <span id="sensorType">---</span></p>
+        </div>
+
+        <div class="section">
+            <button onclick="loadHistory()">🔄 Odśwież</button>
+        </div>
+
+        <div class="grid">
+            <div class="box">
+                <h2>📊 Wykres kołowy</h2>
+                <canvas id="pieChart"></canvas>
+            </div>
+            <div class="box">
+                <h2>📈 Wykres słupkowy</h2>
+                <canvas id="barChart"></canvas>
+                <label for="filterSelect"><strong>Filtruj dane:</strong></label>
+                <select id="filterSelect" onchange="loadHistory()">
+                    <option value="all">Wszystko</option>
+                    <option value="lastDay">Ostatnie 24h</option>
+                    <option value="lastHour">Ostatnia godzina</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="box section">
+            <h2>📋 Historia pomiaru: </h2>
+            <table>
+                <thead>
+                    <tr><th>Czas</th><th>Wartość</th></tr>
+                </thead>
+                <tbody id="historyTable"></tbody>
+            </table>
+        </div>
+
+        <script>
+	const computerSelect = document.getElementById('computerSelect');
+	const sensorSelect = document.getElementById('sensorSelect');
+	const historyTable = document.getElementById('historyTable');
+	const selectedComputerSpan = document.getElementById('selectedComputer');
+	const selectedSensorSpan = document.getElementById('selectedSensor');
+
+	let barChart, pieChart;
+
+	async function loadOptions() {
+		const computers = await fetch('/PCMonitorServer/api/data/computers').then(r => r.json());
+		const sensors = await fetch('/PCMonitorServer/api/data/sensors').then(r => r.json());
+
+		computerSelect.innerHTML = computers.map(c => `<option value="${c.id}">${c.computerName}</option>`).join('');
+		sensorSelect.innerHTML = sensors.map(s => `<option value="${s.id}">${s.sensorName}</option>`).join('');
+	}
+
+	function formatDate(isoString) {
+		const date = new Date(isoString);
+		const y = date.getFullYear();
+		const m = String(date.getMonth() + 1).padStart(2, '0');
+		const d = String(date.getDate()).padStart(2, '0');
+		const h = String(date.getHours()).padStart(2, '0');
+		const min = String(date.getMinutes()).padStart(2, '0');
+		const s = String(date.getSeconds()).padStart(2, '0');
+		return `${y}-${m}-${d} ${h}:${min}:${s}`;
+	}
+
+	async function loadHistory() {
+		const compId = computerSelect.value;
+		const sensorId = sensorSelect.value;
+		const compName = computerSelect.options[computerSelect.selectedIndex].text;
+		const sensorName = sensorSelect.options[sensorSelect.selectedIndex].text;
+		const filterValue = document.getElementById('filterSelect').value;
+
+		selectedComputerSpan.textContent = compName;
+		selectedSensorSpan.textContent = sensorName;
+
+		const sensors = await fetch('/PCMonitorServer/api/data/sensors').then(r => r.json());
+		const selectedSensor = sensors.find(s => s.id == sensorId);
+
+		document.getElementById('hardwareName').textContent = selectedSensor?.hardwareName || '---';
+		document.getElementById('subHardwareName').textContent = selectedSensor?.subHardwareName || '---';
+		document.getElementById('sensorType').textContent = selectedSensor?.sensorType || '---';
+
+		let data = await fetch(`/PCMonitorServer/api/data/history?computerId=${compId}&sensorId=${sensorId}`).then(r => r.json());
+
+		data = filterData(data, filterValue);
+
+		historyTable.innerHTML = data.map(d => `<tr><td>${formatDate(d.timestampUtc)}</td><td>${d.sensorValue}</td></tr>`).join('');
+
+		drawCharts(data);
+	}
+
+	function drawCharts(data) {
+		const ctxBar = document.getElementById('barChart').getContext('2d');
+		const ctxPie = document.getElementById('pieChart').getContext('2d');
+
+		const labels = data.map(d => formatDate(d.timestampUtc));
+		const values = data.map(d => d.sensorValue);
+
+		if (barChart)
+			barChart.destroy();
+		if (pieChart)
+			pieChart.destroy();
+
+		barChart = new Chart(ctxBar, {
+			type: 'bar',
+			data: {
+				labels,
+				datasets: [{
+						label: 'Wartość',
+						data: values,
+						backgroundColor: '#2563eb'
+					}]
+			},
+			options: {
+				responsive: true,
+				scales: {
+					x: {ticks: {autoSkip: true, maxTicksLimit: 10}}
+				}
+			}
+		});
+
+		const valueCounts = {};
+		values.forEach(val => {
+			const key = String(val);
+			valueCounts[key] = (valueCounts[key] || 0) + 1;
+		});
+
+		const pieLabels = Object.keys(valueCounts);
+		const pieData = Object.values(valueCounts);
+		const total = pieData.reduce((sum, val) => sum + val, 0);
+
+		pieChart = new Chart(ctxPie, {
+			type: 'pie',
+			data: {
+				labels: pieLabels,
+				datasets: [{
+						data: pieData,
+						backgroundColor: pieLabels.map((_, i) => {
+							const colors = [
+								'#2563eb', '#10b981', '#f59e0b', '#ef4444',
+								'#6366f1', '#ec4899', '#3b82f6', '#14b8a6',
+								'#8b5cf6', '#f97316', '#eab308', '#22c55e'
+							];
+							return colors[i % colors.length];
+						})
+					}]
+			},
+			options: {
+				responsive: true,
+				plugins: {
+					tooltip: {
+						callbacks: {
+							label: function (context) {
+								const count = context.parsed;
+								const percentage = ((count / total) * 100).toFixed(1);
+								return `${context.label}: ${count} (${percentage}%)`;
+							}
+						}
+					}
+				}
+			}
+		});
+	}
+
+	function filterData(data, filterValue) {
+		const now = new Date();
+
+		if (filterValue === 'lastDay') {
+			const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+			return data.filter(d => new Date(d.timestampUtc) >= oneDayAgo);
+		}
+
+		if (filterValue === 'lastHour') {
+			const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+			return data.filter(d => new Date(d.timestampUtc) >= oneHourAgo);
+		}
+
+		return data; // brak filtra — zwracaj całość
+	}
+	loadOptions();
+        </script>
+    </body>
 </html>
