@@ -77,8 +77,9 @@ To build from source, make sure you have the following:
 
 ### Diagnostic Client
 1. Open the `PCMonitorClient.sln` in Visual Studio.
-2. Build the PCMonitorClient project (`Ctrl + Shift + B`).
-3. Run `PCMonitor.exe` from `bin/Debug` or `bin/Release`.
+2. Install required dependencies listed "Requirements" section (for example by NUGet packages in Visual Studio)
+3. Build the PCMonitorClient project (`Ctrl + Shift + B`).
+4. Run `PCMonitor.exe` from `bin/Debug` or `bin/Release`.
 
 ### Server
 1. Open the `PCMonitorServer` project in Apache NetBeans.
