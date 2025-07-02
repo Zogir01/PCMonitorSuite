@@ -1,0 +1,50 @@
+@startuml
+
+actor Uzytkownik
+participant "PCMonitorClient" as Client
+participant "Serwer API\n(Apache Tomcat)" as Server
+participant "Baza danych\n(H2)" as DB
+participant "Przegladarka\n(Web UI)" as Browser
+
+== Zbieranie danych lokalnie ==
+Client -> Client: Odczytaj dane z czujników i zapisz w pamięci
+
+== Wysyłanie danych do serwera ==
+Client -> Client: Odczytaj dane do wysłania z pamięci
+Client -> Client: Zastosuj filtrowanie danych
+Client -> Server: POST /api/data [JSON]
+Server -> Server: Deserializuj JSON na obiekt DTO
+Server -> Server: Zapisz do pamięci
+Server -> Server: Mapuj DTO na encje Hibernate
+Server -> DB: Zapisz encję (Hibernate)
+
+== Zmiana filtrów przez użytkownika ==
+Uzytkownik -> Client: Zaznacz checkboxy
+Client -> Client: Zaaktualizuj filtry
+
+== Uzyskiwanie danych przez użytkownika ==
+Browser -> Server: GET /api/data
+Server --> Browser: Zwróć ostatnio odczytane dane [text/html]
+
+Uzytkownik -> Browser: Otwórz dashboard webowy
+
+Browser -> Server: GET /api/data/computers
+Server -> DB: Query (wszystkie komputery)
+DB --> Server: Result
+Server --> Browser: Zwróć wszystkie komputery [JSON]
+
+Browser -> Server: GET /api/data/sensor
+Server -> DB: Query (wszystkie czujniki)
+DB --> Server: Result
+Server --> Browser: Zwróć wszystkie czujniki [JSON]
+
+Uzytkownik -> Browser: Wybierz komputer
+Uzytkownik -> Browser: Wybierz czujnik
+Uzytkownik -> Browser: Zatwierdź wprowadzone dane
+
+Browser -> Server: GET /api/data/history?computerId=X&sensorId=Y
+Server -> DB: Query (historyczne dane czujnika)
+DB --> Server: Result
+Server --> Browser: Zwróć historyczne dane czujnika z danego komputera
+
+@enduml

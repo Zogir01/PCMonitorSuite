@@ -1,0 +1,28 @@
+@startuml
+skinparam linetype ortho
+
+package "Komputery monitorujące" {
+    [PC 1: Aplikacja\nC# .NET 4.7.2] <<component>>
+    [PC 2: Aplikacja\nC# .NET 4.7.2] <<component>>
+    [PC 3: Aplikacja\nC# .NET 4.7.2] <<component>>
+}
+
+package "Serwer" {
+    [Apache Tomcat\nREST API (JEE servlet)] <<component>>
+    [Baza danych h2\n(JPA + Hibernate)] <<database>>
+}
+
+package "Komputery / smartfony" {
+    [Przeglądarka internetowa\nDashboard HTML/JS] <<component>>
+}
+
+' Połączenia
+[PC 1: Aplikacja\nC# .NET 4.7.2] --> [Apache Tomcat\nREST API (JEE servlet)] : POST /api/data
+[PC 2: Aplikacja\nC# .NET 4.7.2] --> [Apache Tomcat\nREST API (JEE servlet)] : POST /api/data
+[PC 3: Aplikacja\nC# .NET 4.7.2] --> [Apache Tomcat\nREST API (JEE servlet)] : POST /api/data
+
+[Apache Tomcat\nREST API (JEE servlet)] --> [Baza danych h2\n(JPA + Hibernate)]
+
+[Przeglądarka internetowa\nDashboard HTML/JS] --> [Apache Tomcat\nREST API (JEE servlet)] : GET /api/data\nGET /api/data/computers\nGET /api/data/sensors\nGET /api/data/history
+
+@enduml

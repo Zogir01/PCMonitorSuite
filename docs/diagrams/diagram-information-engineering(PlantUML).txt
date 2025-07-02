@@ -1,0 +1,30 @@
+@startuml
+
+entity "Computer" as computer {
+  * id : BIGINT <<generated>>
+  --
+    computerName : VARCHAR
+}
+
+entity "Sensor" as sensor {
+  * id : BIGINT <<generated>>
+  --
+    hardwareName : VARCHAR
+    subHardwareName : VARCHAR
+    sensorName : VARCHAR
+    sensorType : VARCHAR
+}
+
+entity "SensorReading" as reading {
+  * id : BIGINT <<generated>>
+  --
+    computer_id : BIGINT <<FK>>
+    sensor_id : BIGINT <<FK>>
+    value : FLOAT
+    timestamp : TIMESTAMP
+}
+
+computer ||--{ reading
+sensor ||--{ reading
+
+@enduml
