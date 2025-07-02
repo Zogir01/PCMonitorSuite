@@ -3,6 +3,7 @@
 **PCMonitorSuite** is a system for monitoring a computer's hardware diagnostics (temperatures, CPU/GPU usage, memory, etc.), loading data locally and periodically sending it to a REST API server. The project consists of two three components: a Windows application - PCMonitorClient, backend REST API server - PCMonitorServer and html/js web dashboard.
 
 ---
+
 ## System Architecture
 
 ![Component Diagram](docs/diagrams/diagram-component.png)
@@ -32,6 +33,10 @@
 - Selection of computer and sensor for analysis
 - Displaying the history of readings of the selected sensor in table, chart format
 - Pie chart and bar chart made in chart.js
+
+## Screenshots
+
+---
 
 ## Requirements
 To build from source, make sure you have the following:
