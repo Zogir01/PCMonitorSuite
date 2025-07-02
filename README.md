@@ -36,6 +36,15 @@
 
 ## Screenshots
 
+### Diagnostic Data view (on PCMonitorClient)
+![diagnostic-data](docs/gui-images/diagnostic-data.png)
+
+### Tray Icon view (on PCMonitorClient)
+![tray-icon](docs/gui-images/tray-icon.png)
+
+### Web Dashboard view
+![web-dashboard](docs/gui-images/web-dashboard.png)
+
 ---
 
 ## Requirements
