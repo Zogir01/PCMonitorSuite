@@ -257,5 +257,17 @@ namespace PCMonitor
                 }
             }
         }
+
+        // TO-DO
+        public void saveFiltersToFile()
+        {
+
+        }
+
+        // TO-DO
+        public void loadFiltersFromFile()
+        {
+
+        }
     }
 }
